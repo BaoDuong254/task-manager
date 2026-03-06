@@ -75,7 +75,6 @@ export default async () => {
       // Tasks for "Website Redesign"
       db.task.create({
         data: {
-          taskId: 1,
           projectId: projects[0].id,
           title: 'Create wireframes',
           description: 'Design wireframes for all main pages',
@@ -86,7 +85,6 @@ export default async () => {
       }),
       db.task.create({
         data: {
-          taskId: 2,
           projectId: projects[0].id,
           title: 'Implement homepage',
           description: 'Build the new homepage based on approved wireframes',
@@ -97,7 +95,6 @@ export default async () => {
       }),
       db.task.create({
         data: {
-          taskId: 3,
           projectId: projects[0].id,
           title: 'Set up CI/CD pipeline',
           description: 'Configure automated deployment for the website',
@@ -110,7 +107,6 @@ export default async () => {
       // Tasks for "Mobile App"
       db.task.create({
         data: {
-          taskId: 1,
           projectId: projects[1].id,
           title: 'Set up React Native project',
           description: 'Initialize the project with required dependencies',
@@ -120,7 +116,6 @@ export default async () => {
       }),
       db.task.create({
         data: {
-          taskId: 2,
           projectId: projects[1].id,
           title: 'Design login screen',
           description: 'Create UI for user authentication',
@@ -131,7 +126,6 @@ export default async () => {
       }),
       db.task.create({
         data: {
-          taskId: 3,
           projectId: projects[1].id,
           title: 'Push notification integration',
           description: 'Integrate Firebase for push notifications',
@@ -144,7 +138,6 @@ export default async () => {
       // Tasks for "API Integration"
       db.task.create({
         data: {
-          taskId: 1,
           projectId: projects[2].id,
           title: 'Research payment providers',
           description: 'Compare Stripe, PayPal, and Square APIs',
@@ -154,7 +147,6 @@ export default async () => {
       }),
       db.task.create({
         data: {
-          taskId: 2,
           projectId: projects[2].id,
           title: 'Implement Stripe checkout',
           description: 'Build checkout flow with Stripe API',
@@ -167,7 +159,6 @@ export default async () => {
       // Tasks for "Data Migration"
       db.task.create({
         data: {
-          taskId: 1,
           projectId: projects[3].id,
           title: 'Audit existing database',
           description: 'Document current schema and data relationships',
@@ -178,7 +169,6 @@ export default async () => {
       }),
       db.task.create({
         data: {
-          taskId: 2,
           projectId: projects[3].id,
           title: 'Write migration scripts',
           description: 'Create scripts to transform and migrate data',
@@ -189,7 +179,6 @@ export default async () => {
       }),
       db.task.create({
         data: {
-          taskId: 3,
           projectId: projects[3].id,
           title: 'Validate migrated data',
           description: 'Run integrity checks on migrated records',

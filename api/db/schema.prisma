@@ -16,11 +16,10 @@ generator client {
 
 // Define your own datamodels here and run `yarn redwood prisma migrate dev`
 // to create migrations for them and apply to your dev DB.
-// TODO: Please remove the following example:
 model User {
   id    Int     @id @default(autoincrement())
   email String  @unique
-  username String
+  username String @unique
   password String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -40,7 +39,7 @@ model Project {
 }
 
 model Task {
-  taskId      Int
+  id          Int       @id @default(autoincrement())
   projectId   Int
   title       String
   description String?
@@ -51,7 +50,7 @@ model Task {
   updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
   project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  @@id([taskId, projectId])
+  @@unique([id, projectId])
 }
 
 enum TaskStatus {
