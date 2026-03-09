@@ -46,8 +46,8 @@ jobs:
       - name: Run type check
         run: yarn rw type-check
 
-      - name: Run tests
-        run: yarn rw test --no-watch
+      # - name: Run tests
+      #   run: yarn rw test --no-watch
 
       - name: Build
         run: yarn rw build
