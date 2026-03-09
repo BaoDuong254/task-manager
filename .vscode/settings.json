@@ -8,5 +8,11 @@
   "[prisma]": {
     "editor.formatOnSave": true
   },
-  "prisma.pinToPrisma6": true
+  "prisma.pinToPrisma6": true,
+  "tailwindCSS.classAttributes": [
+    "class",
+    "className",
+    "activeClassName",
+    "errorClassName"
+  ]
 }

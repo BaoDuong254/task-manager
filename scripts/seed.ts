@@ -15,21 +15,24 @@ export default async () => {
         data: {
           email: 'alice@example.com',
           username: 'alice',
-          password: 'password123',
+          hashedPassword: 'password123',
+          salt: 'random_salt_value',
         },
       }),
       db.user.create({
         data: {
           email: 'bob@example.com',
           username: 'bob',
-          password: 'password123',
+          hashedPassword: 'password123',
+          salt: 'random_salt_value',
         },
       }),
       db.user.create({
         data: {
           email: 'charlie@example.com',
           username: 'charlie',
-          password: 'password123',
+          hashedPassword: 'password123',
+          salt: 'random_salt_value',
         },
       }),
     ])
