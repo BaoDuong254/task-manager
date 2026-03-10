@@ -6,6 +6,9 @@
       "web"
     ]
   },
+  "scripts": {
+    "shad": "cd web && npx shadcn@latest add"
+  },
   "devDependencies": {
     "@commitlint/cli": "20.4.3",
     "@commitlint/config-conventional": "20.4.3",
