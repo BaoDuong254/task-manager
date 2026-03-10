@@ -122,6 +122,7 @@ export const TaskFormDialog = ({
     CREATE_TASK_MUTATION,
     {
       onError: (e) => setFormError(e.message),
+      refetchQueries: ['TasksCellQuery'],
     }
   )
 
@@ -129,6 +130,7 @@ export const TaskFormDialog = ({
     UPDATE_TASK_MUTATION,
     {
       onError: (e) => setFormError(e.message),
+      refetchQueries: ['TasksCellQuery'],
     }
   )
 

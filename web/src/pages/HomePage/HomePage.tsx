@@ -4,6 +4,7 @@ import { Metadata, useQuery } from '@redwoodjs/web'
 
 import TaskAnalyticsCell from 'src/cells/TaskAnalyticsCell'
 import TasksCell from 'src/cells/TasksCell'
+import UserOverviewCell from 'src/cells/UserOverviewCell'
 import { PaginationControls } from 'src/components/PaginationControls'
 import { TaskFilters } from 'src/components/TaskFilters'
 import { Button } from 'src/components/ui/button'
@@ -95,43 +96,47 @@ const HomePage = () => {
             </div>
           </div>
 
-          <TaskAnalyticsCell />
+          <div className="tw-flex tw-flex-col tw-gap-6">
+            <UserOverviewCell taskFilter={filter} />
 
-          <TaskFilters
-            status={status}
-            priority={priority}
-            sortField={sortField}
-            sortDirection={sortDirection}
-            onStatusChange={(value) => {
-              setStatus(value)
-              setPage(1)
-            }}
-            onPriorityChange={(value) => {
-              setPriority(value)
-              setPage(1)
-            }}
-            onSortFieldChange={(value) => {
-              setSortField(value)
-              setPage(1)
-            }}
-            onSortDirectionChange={(value) => {
-              setSortDirection(value)
-              setPage(1)
-            }}
-          />
+            <TaskAnalyticsCell />
 
-          <TasksCell filter={filter} sort={sort} pagination={pagination} />
+            <TaskFilters
+              status={status}
+              priority={priority}
+              sortField={sortField}
+              sortDirection={sortDirection}
+              onStatusChange={(value) => {
+                setStatus(value)
+                setPage(1)
+              }}
+              onPriorityChange={(value) => {
+                setPriority(value)
+                setPage(1)
+              }}
+              onSortFieldChange={(value) => {
+                setSortField(value)
+                setPage(1)
+              }}
+              onSortDirectionChange={(value) => {
+                setSortDirection(value)
+                setPage(1)
+              }}
+            />
 
-          <PaginationControls
-            page={page}
-            pageSize={pageSize}
-            totalCount={taskCount}
-            onPageChange={setPage}
-            onPageSizeChange={(value) => {
-              setPageSize(value)
-              setPage(1)
-            }}
-          />
+            <TasksCell filter={filter} sort={sort} pagination={pagination} />
+
+            <PaginationControls
+              page={page}
+              pageSize={pageSize}
+              totalCount={taskCount}
+              onPageChange={setPage}
+              onPageSizeChange={(value) => {
+                setPageSize(value)
+                setPage(1)
+              }}
+            />
+          </div>
         </section>
       )}
     </>

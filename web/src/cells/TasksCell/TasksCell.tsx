@@ -1,6 +1,10 @@
 import { useState } from 'react'
 
-import type { CellFailureProps, CellSuccessProps } from '@redwoodjs/web'
+import {
+  useMutation,
+  type CellFailureProps,
+  type CellSuccessProps,
+} from '@redwoodjs/web'
 
 import { TaskBoard } from 'src/components/TaskBoard'
 import { TaskFormDialog } from 'src/components/TaskFormDialog'
@@ -27,6 +31,14 @@ export const QUERY = gql`
       totalCount
       page
       pageSize
+    }
+  }
+`
+
+const DELETE_TASK_MUTATION = gql`
+  mutation DeleteTaskMutation($id: Int!) {
+    deleteTask(id: $id) {
+      id
     }
   }
 `
@@ -91,6 +103,8 @@ export const Success = ({ tasks, queryResult }: SuccessProps) => {
   const [defaultStatus, setDefaultStatus] = useState<TaskStatus>('TODO')
   const [editingTask, setEditingTask] = useState<BoardTask | null>(null)
 
+  const [deleteTask, { loading: deleting }] = useMutation(DELETE_TASK_MUTATION)
+
   const openCreate = (status: TaskStatus) => {
     setDialogMode('create')
     setEditingTask(null)
@@ -103,6 +117,30 @@ export const Success = ({ tasks, queryResult }: SuccessProps) => {
     setEditingTask(task)
     setDefaultStatus(task.status)
     setDialogOpen(true)
+  }
+
+  const handleDelete = async (task: BoardTask) => {
+    if (!task.id || deleting) {
+      return
+    }
+
+    // Basic confirm to prevent accidental deletions
+    const confirmed = window.confirm(
+      'Are you sure you want to delete this task? This action cannot be undone.'
+    )
+
+    if (!confirmed) {
+      return
+    }
+
+    await deleteTask({
+      variables: {
+        id: task.id,
+      },
+      refetchQueries: ['TasksCellQuery'],
+    })
+
+    await refetchBoard()
   }
 
   const refetchBoard = async () => {
@@ -122,6 +160,7 @@ export const Success = ({ tasks, queryResult }: SuccessProps) => {
         tasks={boardTasks}
         onAddTask={openCreate}
         onEditTask={openEdit}
+        onDeleteTask={handleDelete}
       />
 
       <TaskFormDialog

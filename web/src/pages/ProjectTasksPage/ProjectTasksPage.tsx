@@ -7,6 +7,7 @@ import TaskAnalyticsCell from 'src/cells/TaskAnalyticsCell'
 import TasksCell from 'src/cells/TasksCell'
 import { PaginationControls } from 'src/components/PaginationControls'
 import { TaskFilters } from 'src/components/TaskFilters'
+import { TaskFormDialog } from 'src/components/TaskFormDialog'
 import { Button } from 'src/components/ui/button'
 import type {
   SortDirection,
@@ -35,6 +36,7 @@ const ProjectTasksPage = () => {
   const [sortDirection, setSortDirection] = useState<SortDirection>('ASC')
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
+  const [taskDialogOpen, setTaskDialogOpen] = useState(false)
 
   const { data: projectData } = useQuery(PROJECT_QUERY, {
     variables: { id: projectId },
@@ -79,7 +81,9 @@ const ProjectTasksPage = () => {
             </p>
           )}
         </div>
-        <Button type="button">Add New Task</Button>
+        <Button type="button" onClick={() => setTaskDialogOpen(true)}>
+          Add New Task
+        </Button>
       </div>
 
       <div className="tw-space-y-4">
@@ -122,6 +126,13 @@ const ProjectTasksPage = () => {
           }}
         />
       </div>
+
+      <TaskFormDialog
+        open={taskDialogOpen}
+        onOpenChange={setTaskDialogOpen}
+        mode="create"
+        defaultProjectId={projectId}
+      />
     </>
   )
 }
