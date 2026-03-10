@@ -1,3 +1,4 @@
+import { Link, routes, useParams } from '@redwoodjs/router'
 import type { CellFailureProps, CellSuccessProps } from '@redwoodjs/web'
 
 export const QUERY = gql`
@@ -40,21 +41,30 @@ type SuccessProps = CellSuccessProps<{
 }>
 
 export const Success = ({ projects }: SuccessProps) => {
+  const params = useParams()
+  const activeProjectId = params.id ? Number(params.id) : null
+
   return (
     <ul className="tw-space-y-1 tw-text-sm tw-text-muted-foreground">
       {projects.map((project) => (
-        <li
-          key={project.id}
-          className="tw-rounded-md tw-bg-background tw-px-3 tw-py-2 tw-transition-colors hover:tw-bg-muted/80 hover:tw-text-foreground"
-        >
-          <div className="tw-flex tw-items-center tw-justify-between tw-gap-2">
-            <span className="tw-truncate">{project.name}</span>
-          </div>
-          {project.description && (
-            <p className="tw-truncate tw-text-xs tw-text-muted-foreground">
-              {project.description}
-            </p>
-          )}
+        <li key={project.id}>
+          <Link
+            to={routes.projectTasks({ id: project.id })}
+            className={`tw-block tw-rounded-md tw-px-3 tw-py-2 tw-transition-colors ${
+              activeProjectId === project.id
+                ? 'tw-bg-primary/10 tw-text-foreground'
+                : 'tw-bg-background tw-text-muted-foreground hover:tw-bg-muted/80 hover:tw-text-foreground'
+            }`}
+          >
+            <div className="tw-flex tw-items-center tw-justify-between tw-gap-2">
+              <span className="tw-truncate">{project.name}</span>
+            </div>
+            {project.description && (
+              <p className="tw-truncate tw-text-xs tw-text-muted-foreground">
+                {project.description}
+              </p>
+            )}
+          </Link>
         </li>
       ))}
     </ul>

@@ -1,6 +1,10 @@
 import type { ReactNode } from 'react'
+import { useState } from 'react'
+
+import { Link, routes } from '@redwoodjs/router'
 
 import { useAuth } from 'src/auth'
+import ProjectsCell from 'src/cells/ProjectsCell'
 import { Button } from 'src/components/ui/button'
 
 type DashboardLayoutProps = {
@@ -9,8 +13,10 @@ type DashboardLayoutProps = {
 
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const { currentUser, logOut } = useAuth()
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
 
-  const handleLogout = async () => {
+  const handleConfirmLogout = async () => {
+    setShowLogoutConfirm(false)
     await logOut()
   }
 
@@ -64,9 +70,12 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               <div className="tw-text-xs tw-font-semibold tw-uppercase tw-tracking-wide tw-text-muted-foreground">
                 Main
               </div>
-              <button className="tw-flex tw-w-full tw-items-center tw-justify-between tw-rounded-md tw-bg-background tw-px-3 tw-py-2 tw-text-sm tw-font-medium tw-text-foreground tw-shadow-sm">
+              <Link
+                to={routes.home()}
+                className="tw-flex tw-w-full tw-items-center tw-justify-between tw-rounded-md tw-bg-background tw-px-3 tw-py-2 tw-text-sm tw-font-medium tw-text-foreground tw-shadow-sm hover:tw-bg-muted/80"
+              >
                 <span>My Tasks</span>
-              </button>
+              </Link>
             </nav>
 
             <div className="tw-space-y-2">
@@ -79,9 +88,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 </Button>
               </div>
               <div className="tw-space-y-1 tw-text-sm tw-text-muted-foreground">
-                <div className="tw-rounded-md tw-bg-background tw-px-3 tw-py-2">
-                  Project list coming soon
-                </div>
+                <ProjectsCell />
               </div>
             </div>
 
@@ -109,7 +116,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 type="button"
                 variant="ghost"
                 size="icon"
-                onClick={handleLogout}
+                onClick={() => setShowLogoutConfirm(true)}
                 aria-label="Logout"
               >
                 <span aria-hidden="true">⎋</span>
@@ -122,6 +129,49 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           {children}
         </main>
       </div>
+
+      {showLogoutConfirm && (
+        <div
+          className="tw-fixed tw-inset-0 tw-z-40 tw-flex tw-items-center tw-justify-center tw-bg-black/40 tw-p-4"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setShowLogoutConfirm(false)
+            }
+          }}
+        >
+          <div
+            className="tw-w-full tw-max-w-sm tw-rounded-lg tw-border tw-border-border tw-bg-background tw-px-5 tw-py-4 tw-shadow-lg"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="logout-dialog-title"
+          >
+            <h2
+              id="logout-dialog-title"
+              className="tw-text-sm tw-font-semibold tw-text-foreground"
+            >
+              Are you sure you want to logout?
+            </h2>
+            <p className="tw-mt-1 tw-text-xs tw-text-muted-foreground">
+              You will need to sign in again to access your workspace.
+            </p>
+
+            <div className="tw-mt-4 tw-flex tw-items-center tw-justify-end tw-gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setShowLogoutConfirm(false)}
+              >
+                Cancel
+              </Button>
+              <Button type="button" size="sm" onClick={handleConfirmLogout}>
+                Logout
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

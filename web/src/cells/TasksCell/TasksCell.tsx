@@ -1,4 +1,10 @@
+import { useState } from 'react'
+
 import type { CellFailureProps, CellSuccessProps } from '@redwoodjs/web'
+
+import { TaskBoard } from 'src/components/TaskBoard'
+import { TaskFormDialog } from 'src/components/TaskFormDialog'
+import type { BoardTask, TaskStatus } from 'src/types/task.type'
 
 export const QUERY = gql`
   query TasksCellQuery(
@@ -62,21 +68,46 @@ type SuccessProps = CellSuccessProps<{
   }
 }>
 
-export const Success = ({ tasks }: SuccessProps) => {
+export const Success = ({ tasks, queryResult }: SuccessProps) => {
   const { results, totalCount, page, pageSize } = tasks
-
-  const groupedByStatus = {
-    TODO: [] as SuccessProps['tasks']['results'],
-    IN_PROGRESS: [] as SuccessProps['tasks']['results'],
-    COMPLETED: [] as SuccessProps['tasks']['results'],
-  }
-
-  for (const task of results) {
-    groupedByStatus[task.status].push(task)
-  }
 
   const from = (page - 1) * pageSize + 1
   const to = Math.min(page * pageSize, totalCount)
+
+  const boardTasks: BoardTask[] = results.map((t) => ({
+    id: t.id,
+    projectId: t.projectId,
+    title: t.title,
+    description: t.description ?? null,
+    status: t.status,
+    priority: t.priority,
+    dueDate: t.dueDate ?? null,
+    createdAt: t.createdAt,
+    updatedAt: t.updatedAt,
+  }))
+
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [dialogMode, setDialogMode] = useState<'create' | 'edit'>('create')
+  const [defaultStatus, setDefaultStatus] = useState<TaskStatus>('TODO')
+  const [editingTask, setEditingTask] = useState<BoardTask | null>(null)
+
+  const openCreate = (status: TaskStatus) => {
+    setDialogMode('create')
+    setEditingTask(null)
+    setDefaultStatus(status)
+    setDialogOpen(true)
+  }
+
+  const openEdit = (task: BoardTask) => {
+    setDialogMode('edit')
+    setEditingTask(task)
+    setDefaultStatus(task.status)
+    setDialogOpen(true)
+  }
+
+  const refetchBoard = async () => {
+    await queryResult?.refetch?.()
+  }
 
   return (
     <section className="tw-space-y-4">
@@ -87,70 +118,20 @@ export const Success = ({ tasks }: SuccessProps) => {
         </span>
       </div>
 
-      <div className="tw-grid tw-gap-4 md:tw-grid-cols-3">
-        {(['TODO', 'IN_PROGRESS', 'COMPLETED'] as const).map((status) => {
-          const columnTasks = groupedByStatus[status]
+      <TaskBoard
+        tasks={boardTasks}
+        onAddTask={openCreate}
+        onEditTask={openEdit}
+      />
 
-          const title =
-            status === 'TODO'
-              ? 'Todo'
-              : status === 'IN_PROGRESS'
-                ? 'In Progress'
-                : 'Completed'
-
-          return (
-            <div
-              key={status}
-              className="tw-flex tw-h-full tw-flex-col tw-rounded-lg tw-border tw-border-border tw-bg-background"
-            >
-              <header className="tw-flex tw-items-center tw-justify-between tw-border-b tw-border-border tw-px-3 tw-py-2">
-                <div className="tw-flex tw-items-center tw-gap-2">
-                  <span className="tw-text-sm tw-font-semibold tw-text-foreground">
-                    {title}
-                  </span>
-                  <span className="tw-rounded-full tw-bg-muted tw-px-2 tw-py-0.5 tw-text-xs tw-text-muted-foreground">
-                    {columnTasks.length}
-                  </span>
-                </div>
-              </header>
-
-              <div className="tw-flex-1 tw-space-y-2 tw-overflow-y-auto tw-p-3">
-                {columnTasks.length === 0 ? (
-                  <p className="tw-text-xs tw-text-muted-foreground">
-                    No tasks in this column yet.
-                  </p>
-                ) : (
-                  columnTasks.map((task) => (
-                    <article
-                      key={task.id}
-                      className="tw-space-y-1 tw-rounded-md tw-border tw-border-border tw-bg-muted/40 tw-p-3"
-                    >
-                      <h3 className="tw-text-sm tw-font-medium tw-text-foreground">
-                        {task.title}
-                      </h3>
-                      {task.description && (
-                        <p className="tw-line-clamp-2 tw-text-xs tw-text-muted-foreground">
-                          {task.description}
-                        </p>
-                      )}
-                      <div className="tw-flex tw-items-center tw-justify-between tw-pt-1">
-                        <span className="tw-rounded-full tw-bg-secondary tw-px-2 tw-py-0.5 tw-text-[10px] tw-font-medium tw-uppercase tw-tracking-wide tw-text-secondary-foreground">
-                          {task.priority.toLowerCase()} priority
-                        </span>
-                        {task.dueDate && (
-                          <span className="tw-text-[10px] tw-text-muted-foreground">
-                            Due {new Date(task.dueDate).toLocaleDateString()}
-                          </span>
-                        )}
-                      </div>
-                    </article>
-                  ))
-                )}
-              </div>
-            </div>
-          )
-        })}
-      </div>
+      <TaskFormDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        mode={dialogMode}
+        initialTask={editingTask}
+        defaultStatus={defaultStatus}
+        onSaved={refetchBoard}
+      />
     </section>
   )
 }

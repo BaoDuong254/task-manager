@@ -23,6 +23,7 @@ const Routes = () => {
       <PrivateSet unauthenticated="login">
         <Set wrap={DashboardLayout}>
           <Route path="/" page={HomePage} name="home" />
+          <Route path="/projects/{id:Int}" page={ProjectTasksPage} name="projectTasks" />
         </Set>
       </PrivateSet>
       <Route notfound page={NotFoundPage} />
