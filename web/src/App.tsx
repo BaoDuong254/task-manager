@@ -2,7 +2,9 @@ import type { ReactNode } from 'react'
 
 import { FatalErrorBoundary, RedwoodProvider } from '@redwoodjs/web'
 import { RedwoodApolloProvider } from '@redwoodjs/web/apollo'
+import { Toaster } from '@redwoodjs/web/toast'
 
+import { ThemeProvider } from 'src/components/ThemeProvider'
 import FatalErrorPage from 'src/pages/FatalErrorPage'
 
 import { AuthProvider, useAuth } from './auth'
@@ -19,7 +21,10 @@ const App = ({ children }: AppProps) => (
     <RedwoodProvider titleTemplate="%PageTitle | %AppTitle">
       <AuthProvider>
         <RedwoodApolloProvider useAuth={useAuth}>
-          {children}
+          <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+            {children}
+            <Toaster toastOptions={{ duration: 4000, className: 'rw-toast' }} />
+          </ThemeProvider>
         </RedwoodApolloProvider>
       </AuthProvider>
     </RedwoodProvider>
