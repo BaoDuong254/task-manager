@@ -340,6 +340,7 @@ export const TaskFormDialog = ({
                   type="date"
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
+                  min={new Date().toISOString().slice(0, 10)}
                   className="tw-h-9 tw-text-sm"
                   disabled={saving}
                 />

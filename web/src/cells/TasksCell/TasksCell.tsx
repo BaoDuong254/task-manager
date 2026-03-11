@@ -63,6 +63,7 @@ const DELETE_TASK_MUTATION = gql`
 export const beforeQuery = (variables: Record<string, unknown>) => {
   return {
     variables,
+    fetchPolicy: 'cache-and-network' as const,
   }
 }
 
