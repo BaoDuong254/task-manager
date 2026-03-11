@@ -28,18 +28,14 @@ describe('projects', () => {
     expect(result).toEqual(scenario.project.one)
   })
 
-  scenario('creates a project', async (scenario: StandardScenario) => {
+  scenario('creates a project', async () => {
     const result = await createProject({
       input: {
         name: 'String',
-        updatedAt: '2026-03-10T10:35:06.445Z',
-        userId: scenario.project.two.userId,
       },
     })
 
     expect(result.name).toEqual('String')
-    expect(result.updatedAt).toEqual(new Date('2026-03-10T10:35:06.445Z'))
-    expect(result.userId).toEqual(scenario.project.two.userId)
   })
 
   scenario('updates a project', async (scenario: StandardScenario) => {

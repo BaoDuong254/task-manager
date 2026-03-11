@@ -29,7 +29,6 @@ describe('users', () => {
         username: 'String5903048',
         hashedPassword: 'String',
         salt: 'String',
-        updatedAt: '2026-03-10T10:44:09.181Z',
       },
     })
 
@@ -37,7 +36,6 @@ describe('users', () => {
     expect(result.username).toEqual('String5903048')
     expect(result.hashedPassword).toEqual('String')
     expect(result.salt).toEqual('String')
-    expect(result.updatedAt).toEqual(new Date('2026-03-10T10:44:09.181Z'))
   })
 
   scenario('updates a user', async (scenario: StandardScenario) => {

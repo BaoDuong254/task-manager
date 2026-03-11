@@ -9,6 +9,7 @@ import avt from 'src/assets/avt.jpg'
 import logo from 'src/assets/logo.png'
 import { useAuth } from 'src/auth'
 import ProjectsCell from 'src/cells/ProjectsCell'
+import { ModeToggle } from 'src/components/ModeToggle'
 import { TaskFormDialog } from 'src/components/TaskFormDialog'
 import {
   AlertDialog,
@@ -29,7 +30,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from 'src/components/ui/dialog'
-import { ProjectDialogContext } from 'src/lib/ProjectDialogContext'
+import { ProjectDialogContext } from 'src/contexts/ProjectDialogContext'
 
 type DashboardLayoutProps = {
   children?: React.ReactNode
@@ -47,6 +48,7 @@ const CREATE_PROJECT_MUTATION = gql`
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const { currentUser, logOut } = useAuth()
   const matchHome = useMatch(routes.home())
+  const matchSettings = useMatch(routes.settings())
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
   const [taskDialogOpen, setTaskDialogOpen] = useState(false)
 
@@ -121,16 +123,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             />
           </div>
 
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            aria-label="Notifications"
-          >
-            <span className="tw-text-lg" aria-hidden="true">
-              ⏰
-            </span>
-          </Button>
+          <ModeToggle />
         </div>
       </header>
 
@@ -174,12 +167,15 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               <div className="tw-text-xs tw-font-semibold tw-uppercase tw-tracking-wide tw-text-muted-foreground">
                 System
               </div>
-              <button className="tw-flex tw-w-full tw-items-center tw-justify-between tw-rounded-md tw-px-3 tw-py-2 tw-text-sm tw-text-muted-foreground hover:tw-bg-background hover:tw-text-foreground">
+              <Link
+                to={routes.settings()}
+                className={`tw-flex tw-w-full tw-items-center tw-justify-between tw-rounded-md tw-px-3 tw-py-2 tw-text-sm hover:tw-bg-background hover:tw-text-foreground ${matchSettings.match ? 'tw-bg-background tw-font-medium tw-text-foreground' : 'tw-text-muted-foreground'}`}
+              >
                 <span className="tw-flex tw-items-center tw-gap-2">
                   <Settings size={16} />
                   Settings
                 </span>
-              </button>
+              </Link>
             </div>
           </div>
 

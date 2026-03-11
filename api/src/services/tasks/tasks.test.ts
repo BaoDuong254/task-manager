@@ -11,9 +11,9 @@ import type { StandardScenario } from './tasks.scenarios'
 
 describe('tasks', () => {
   scenario('returns all tasks', async (scenario: StandardScenario) => {
-    const result = await tasks()
+    const result = await tasks({})
 
-    expect(result.length).toEqual(Object.keys(scenario.task).length)
+    expect(result.totalCount).toEqual(Object.keys(scenario.task).length)
   })
 
   scenario('returns a single task', async (scenario: StandardScenario) => {
@@ -27,13 +27,15 @@ describe('tasks', () => {
       input: {
         projectId: scenario.task.two.projectId,
         title: 'String',
-        updatedAt: '2026-03-10T10:35:18.518Z',
+        status: 'TODO',
+        priority: 'MEDIUM',
       },
     })
 
     expect(result.projectId).toEqual(scenario.task.two.projectId)
     expect(result.title).toEqual('String')
-    expect(result.updatedAt).toEqual(new Date('2026-03-10T10:35:18.518Z'))
+    expect(result.status).toEqual('TODO')
+    expect(result.priority).toEqual('MEDIUM')
   })
 
   scenario('updates a task', async (scenario: StandardScenario) => {

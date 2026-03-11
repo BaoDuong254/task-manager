@@ -8,7 +8,7 @@ import UserOverviewCell from 'src/cells/UserOverviewCell'
 import { PaginationControls } from 'src/components/PaginationControls'
 import { TaskFilters } from 'src/components/TaskFilters'
 import { Button } from 'src/components/ui/button'
-import { useProjectDialog } from 'src/lib/ProjectDialogContext'
+import { useProjectDialog } from 'src/contexts/ProjectDialogContext'
 import type {
   SortDirection,
   TaskFilterPriority,
