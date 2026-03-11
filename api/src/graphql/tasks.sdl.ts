@@ -29,6 +29,7 @@ export const schema = gql`
     status: TaskStatus
     priority: TaskPriority
     projectId: Int
+    search: String
   }
 
   enum TaskSortField {
