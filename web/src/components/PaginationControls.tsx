@@ -1,4 +1,11 @@
 import { Button } from 'src/components/ui/button'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from 'src/components/ui/select'
 
 type PaginationControlsProps = {
   page: number
@@ -43,17 +50,21 @@ export const PaginationControls = ({
           <span className="tw-text-xs tw-text-muted-foreground">
             Rows per page
           </span>
-          <select
-            className="tw-h-8 tw-rounded-md tw-border tw-border-input tw-bg-background tw-px-2 tw-text-xs tw-text-foreground focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-ring focus-visible:tw-ring-offset-2 focus-visible:tw-ring-offset-background"
-            value={pageSize}
-            onChange={(event) => onPageSizeChange?.(Number(event.target.value))}
+          <Select
+            value={String(pageSize)}
+            onValueChange={(value) => onPageSizeChange?.(Number(value))}
           >
-            {[10, 20, 50].map((size) => (
-              <option key={size} value={size}>
-                {size}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className="tw-h-8 tw-w-[5.5rem] tw-text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {[10, 20, 50].map((size) => (
+                <SelectItem key={size} value={String(size)}>
+                  {size}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="tw-flex tw-items-center tw-gap-2">

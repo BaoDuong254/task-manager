@@ -1,4 +1,11 @@
 import { Button } from 'src/components/ui/button'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from 'src/components/ui/select'
 import type {
   TaskFilterPriority,
   TaskFilterStatus,
@@ -77,36 +84,44 @@ export const TaskFilters = ({
       <div className="tw-flex tw-flex-wrap tw-items-center tw-gap-3">
         <div className="tw-flex tw-items-center tw-gap-2">
           <span className="tw-text-xs tw-text-muted-foreground">Priority</span>
-          <select
-            className="tw-h-8 tw-rounded-md tw-border tw-border-input tw-bg-background tw-px-2 tw-text-xs tw-text-foreground focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-ring focus-visible:tw-ring-offset-2 focus-visible:tw-ring-offset-background"
+          <Select
             value={priority}
-            onChange={(event) =>
-              onPriorityChange?.(event.target.value as TaskFilterPriority)
+            onValueChange={(value) =>
+              onPriorityChange?.(value as TaskFilterPriority)
             }
           >
-            {priorityFilters.map((item) => (
-              <option key={item.value} value={item.value}>
-                {item.label}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className="tw-h-8 tw-w-[10rem] tw-text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {priorityFilters.map((item) => (
+                <SelectItem key={item.value} value={item.value}>
+                  {item.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="tw-flex tw-items-center tw-gap-2">
           <span className="tw-text-xs tw-text-muted-foreground">Sort by</span>
-          <select
-            className="tw-h-8 tw-rounded-md tw-border tw-border-input tw-bg-background tw-px-2 tw-text-xs tw-text-foreground focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-ring focus-visible:tw-ring-offset-2 focus-visible:tw-ring-offset-background"
+          <Select
             value={sortField}
-            onChange={(event) =>
-              onSortFieldChange?.(event.target.value as TaskSortField)
+            onValueChange={(value) =>
+              onSortFieldChange?.(value as TaskSortField)
             }
           >
-            {sortFields.map((item) => (
-              <option key={item.value} value={item.value}>
-                {item.label}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className="tw-h-8 tw-w-[10rem] tw-text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {sortFields.map((item) => (
+                <SelectItem key={item.value} value={item.value}>
+                  {item.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Button
             type="button"
             size="icon"
@@ -126,21 +141,24 @@ export const TaskFilters = ({
         {projectOptions && projectOptions.length > 0 && (
           <div className="tw-flex tw-items-center tw-gap-2">
             <span className="tw-text-xs tw-text-muted-foreground">Project</span>
-            <select
-              className="tw-h-8 tw-min-w-[8rem] tw-rounded-md tw-border tw-border-input tw-bg-background tw-px-2 tw-text-xs tw-text-foreground focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-ring focus-visible:tw-ring-offset-2 focus-visible:tw-ring-offset-background"
-              value={projectId ?? ''}
-              onChange={(event) => {
-                const value = event.target.value
-                onProjectChange?.(value === '' ? null : Number(value))
-              }}
+            <Select
+              value={projectId ? String(projectId) : 'ALL'}
+              onValueChange={(value) =>
+                onProjectChange?.(value === 'ALL' ? null : Number(value))
+              }
             >
-              <option value="">All projects</option>
-              {projectOptions.map((project) => (
-                <option key={project.id} value={project.id}>
-                  {project.name}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="tw-h-8 tw-min-w-[10rem] tw-text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All projects</SelectItem>
+                {projectOptions.map((project) => (
+                  <SelectItem key={project.id} value={String(project.id)}>
+                    {project.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         )}
       </div>

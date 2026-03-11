@@ -8,6 +8,7 @@ import UserOverviewCell from 'src/cells/UserOverviewCell'
 import { PaginationControls } from 'src/components/PaginationControls'
 import { TaskFilters } from 'src/components/TaskFilters'
 import { Button } from 'src/components/ui/button'
+import { useProjectDialog } from 'src/lib/ProjectDialogContext'
 import type {
   SortDirection,
   TaskFilterPriority,
@@ -27,12 +28,14 @@ const WORKSPACE_QUERY = gql`
 `
 
 const HomePage = () => {
+  const { openProjectDialog } = useProjectDialog()
   const [status, setStatus] = useState<TaskFilterStatus>('ALL')
   const [priority, setPriority] = useState<TaskFilterPriority>('ALL')
   const [sortField, setSortField] = useState<TaskSortField>('DEADLINE')
   const [sortDirection, setSortDirection] = useState<SortDirection>('ASC')
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
+  const [totalCount, setTotalCount] = useState(0)
 
   const { data: workspaceData, loading: workspaceLoading } =
     useQuery(WORKSPACE_QUERY)
@@ -68,7 +71,7 @@ const HomePage = () => {
       {workspaceLoading ? (
         <div className="tw-h-40 tw-animate-pulse tw-rounded-lg tw-border tw-border-border tw-bg-muted/60" />
       ) : showWelcome ? (
-        <section className="tw-flex tw-min-h-[60vh] tw-flex-col tw-items-center tw-justify-center tw-rounded-lg tw-border tw-border-dashed tw-border-border tw-bg-muted/40 tw-p-8 tw-text-center">
+        <section className="tw-flex tw-h-full tw-min-h-[60vh] tw-flex-col tw-items-center tw-justify-center tw-rounded-lg tw-border tw-border-dashed tw-border-border tw-bg-muted/40 tw-p-8 tw-text-center">
           <div className="tw-mb-4 tw-flex tw-h-16 tw-w-16 tw-items-center tw-justify-center tw-rounded-full tw-bg-primary/10 tw-text-3xl">
             📌
           </div>
@@ -80,11 +83,13 @@ const HomePage = () => {
             related tasks and keep your work organized.
           </p>
           <div className="tw-mt-6 tw-flex tw-flex-wrap tw-justify-center tw-gap-3">
-            <Button type="button">Create your first project</Button>
+            <Button type="button" onClick={openProjectDialog}>
+              Create your first project
+            </Button>
           </div>
         </section>
       ) : (
-        <section className="tw-space-y-4">
+        <section className="tw-flex tw-h-full tw-min-h-0 tw-flex-col tw-gap-4">
           <div className="tw-flex tw-items-center tw-justify-between tw-gap-2">
             <div>
               <h1 className="tw-text-xl tw-font-semibold tw-text-foreground">
@@ -96,7 +101,7 @@ const HomePage = () => {
             </div>
           </div>
 
-          <div className="tw-flex tw-flex-col tw-gap-6">
+          <div className="tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-gap-6 tw-overflow-y-auto">
             <UserOverviewCell taskFilter={filter} />
 
             <TaskAnalyticsCell />
@@ -124,12 +129,17 @@ const HomePage = () => {
               }}
             />
 
-            <TasksCell filter={filter} sort={sort} pagination={pagination} />
+            <TasksCell
+              filter={filter}
+              sort={sort}
+              pagination={pagination}
+              onTotalCountChange={setTotalCount}
+            />
 
             <PaginationControls
               page={page}
               pageSize={pageSize}
-              totalCount={taskCount}
+              totalCount={totalCount}
               onPageChange={setPage}
               onPageSizeChange={(value) => {
                 setPageSize(value)

@@ -1,7 +1,25 @@
+import { Plus } from 'lucide-react'
+
+import { Badge } from 'src/components/ui/badge'
 import { Button } from 'src/components/ui/button'
+import { Card, CardContent, CardHeader } from 'src/components/ui/card'
 import type { BoardTask, TaskStatus } from 'src/types/task.type'
 
 import { TaskCard } from './TaskCard'
+
+const statusColorClass: Record<TaskStatus, string> = {
+  TODO: 'tw-border-gray-300 dark:tw-border-gray-600',
+  IN_PROGRESS: 'tw-border-blue-400 dark:tw-border-blue-500',
+  COMPLETED: 'tw-border-green-400 dark:tw-border-green-500',
+}
+
+const statusBadgeColorClass: Record<TaskStatus, string> = {
+  TODO: 'tw-border-transparent tw-bg-gray-100 tw-text-gray-700 dark:tw-bg-gray-800 dark:tw-text-gray-300',
+  IN_PROGRESS:
+    'tw-border-transparent tw-bg-blue-100 tw-text-blue-700 dark:tw-bg-blue-900 dark:tw-text-blue-300',
+  COMPLETED:
+    'tw-border-transparent tw-bg-green-100 tw-text-green-700 dark:tw-bg-green-900 dark:tw-text-green-300',
+}
 
 type TaskColumnProps = {
   title: string
@@ -27,31 +45,33 @@ export const TaskColumn = ({
   }
 
   return (
-    <section className="tw-flex tw-h-full tw-flex-col tw-rounded-lg tw-border tw-border-border tw-bg-background">
-      <header className="tw-flex tw-items-center tw-justify-between tw-border-b tw-border-border tw-px-3 tw-py-2">
-        <div className="tw-flex tw-items-center tw-gap-2">
-          <span className="tw-text-sm tw-font-semibold tw-text-foreground">
+    <Card
+      className={`tw-flex tw-h-full tw-max-h-[calc(100vh-16rem)] tw-min-h-0 tw-flex-col tw-border-t-2 ${statusColorClass[status]}`}
+    >
+      <CardHeader className="!tw-flex-row tw-items-center tw-justify-between tw-gap-2 tw-space-y-0 tw-border-b tw-border-border tw-px-3 tw-py-2">
+        <div className="tw-flex tw-min-w-0 tw-items-center tw-gap-2">
+          <span className="tw-truncate tw-text-sm tw-font-semibold tw-text-foreground">
             {title}
           </span>
-          <span className="tw-rounded-full tw-bg-muted tw-px-2 tw-py-0.5 tw-text-xs tw-text-muted-foreground">
+          <Badge className={`tw-font-normal ${statusBadgeColorClass[status]}`}>
             {tasks.length}
-          </span>
+          </Badge>
         </div>
         {onAddTask && (
           <Button
             type="button"
             variant="outline"
             size="icon"
-            className="tw-h-7 tw-w-7 tw-text-lg"
+            className="tw-h-7 tw-w-7 tw-shrink-0 tw-text-lg"
             onClick={handleAdd}
             aria-label={`Add task to ${title}`}
           >
-            +
+            <Plus />
           </Button>
         )}
-      </header>
+      </CardHeader>
 
-      <div className="tw-flex-1 tw-space-y-2 tw-overflow-y-auto tw-p-3">
+      <CardContent className="tw-min-h-0 tw-flex-1 tw-space-y-3 tw-overflow-y-auto tw-p-3 tw-pt-4">
         {tasks.length === 0 ? (
           <p className="tw-text-xs tw-text-muted-foreground">
             No tasks in this column yet.
@@ -66,8 +86,8 @@ export const TaskColumn = ({
             />
           ))
         )}
-      </div>
-    </section>
+      </CardContent>
+    </Card>
   )
 }
 

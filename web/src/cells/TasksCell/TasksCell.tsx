@@ -1,4 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+
+import type {
+  TasksCellQuery,
+  TasksCellQueryVariables,
+  TaskFilterInput,
+} from 'types/graphql'
 
 import {
   useMutation,
@@ -8,6 +14,17 @@ import {
 
 import { TaskBoard } from 'src/components/TaskBoard'
 import { TaskFormDialog } from 'src/components/TaskFormDialog'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from 'src/components/ui/alert-dialog'
+import { Button } from 'src/components/ui/button'
 import type { BoardTask, TaskStatus } from 'src/types/task.type'
 
 export const QUERY = gql`
@@ -61,27 +78,25 @@ export const Empty = () => (
   </div>
 )
 
-type SuccessProps = CellSuccessProps<{
-  tasks: {
-    results: Array<{
-      id: number
-      projectId: number
-      title: string
-      description?: string | null
-      status: 'TODO' | 'IN_PROGRESS' | 'COMPLETED'
-      priority: 'LOW' | 'MEDIUM' | 'HIGH'
-      dueDate?: string | null
-      createdAt: string
-      updatedAt: string
-    }>
-    totalCount: number
-    page: number
-    pageSize: number
-  }
-}>
+type ExtraProps = {
+  filter?: TaskFilterInput
+  onTotalCountChange?: (totalCount: number) => void
+}
 
-export const Success = ({ tasks, queryResult }: SuccessProps) => {
+type SuccessProps = CellSuccessProps<TasksCellQuery, TasksCellQueryVariables> &
+  ExtraProps
+
+export const Success = ({
+  tasks,
+  queryResult,
+  filter,
+  onTotalCountChange,
+}: SuccessProps) => {
   const { results, totalCount, page, pageSize } = tasks
+
+  useEffect(() => {
+    onTotalCountChange?.(totalCount)
+  }, [totalCount, onTotalCountChange])
 
   const from = (page - 1) * pageSize + 1
   const to = Math.min(page * pageSize, totalCount)
@@ -104,6 +119,7 @@ export const Success = ({ tasks, queryResult }: SuccessProps) => {
   const [editingTask, setEditingTask] = useState<BoardTask | null>(null)
 
   const [deleteTask, { loading: deleting }] = useMutation(DELETE_TASK_MUTATION)
+  const [taskToDelete, setTaskToDelete] = useState<BoardTask | null>(null)
 
   const openCreate = (status: TaskStatus) => {
     setDialogMode('create')
@@ -119,27 +135,30 @@ export const Success = ({ tasks, queryResult }: SuccessProps) => {
     setDialogOpen(true)
   }
 
-  const handleDelete = async (task: BoardTask) => {
+  const requestDelete = (task: BoardTask) => {
     if (!task.id || deleting) {
       return
     }
+    setTaskToDelete(task)
+  }
 
-    // Basic confirm to prevent accidental deletions
-    const confirmed = window.confirm(
-      'Are you sure you want to delete this task? This action cannot be undone.'
-    )
-
-    if (!confirmed) {
+  const handleConfirmDelete = async () => {
+    if (!taskToDelete?.id || deleting) {
       return
     }
 
     await deleteTask({
       variables: {
-        id: task.id,
+        id: taskToDelete.id,
       },
-      refetchQueries: ['TasksCellQuery'],
+      refetchQueries: [
+        'TasksCellQuery',
+        'TaskAnalyticsCellQuery',
+        'HomePageWorkspaceQuery',
+      ],
     })
 
+    setTaskToDelete(null)
     await refetchBoard()
   }
 
@@ -160,7 +179,7 @@ export const Success = ({ tasks, queryResult }: SuccessProps) => {
         tasks={boardTasks}
         onAddTask={openCreate}
         onEditTask={openEdit}
-        onDeleteTask={handleDelete}
+        onDeleteTask={requestDelete}
       />
 
       <TaskFormDialog
@@ -169,8 +188,46 @@ export const Success = ({ tasks, queryResult }: SuccessProps) => {
         mode={dialogMode}
         initialTask={editingTask}
         defaultStatus={defaultStatus}
+        defaultProjectId={filter?.projectId ?? undefined}
         onSaved={refetchBoard}
       />
+
+      <AlertDialog
+        open={!!taskToDelete}
+        onOpenChange={(open) => {
+          if (!open) {
+            setTaskToDelete(null)
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete task</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this task? This action cannot be
+              undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel asChild>
+              <Button type="button" variant="outline" size="sm">
+                Cancel
+              </Button>
+            </AlertDialogCancel>
+            <AlertDialogAction asChild>
+              <Button
+                type="button"
+                size="sm"
+                variant="destructive"
+                onClick={handleConfirmDelete}
+                disabled={deleting}
+              >
+                Delete
+              </Button>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </section>
   )
 }

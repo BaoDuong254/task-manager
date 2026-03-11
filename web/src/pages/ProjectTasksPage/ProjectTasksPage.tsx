@@ -37,6 +37,7 @@ const ProjectTasksPage = () => {
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
   const [taskDialogOpen, setTaskDialogOpen] = useState(false)
+  const [totalCount, setTotalCount] = useState(0)
 
   const { data: projectData } = useQuery(PROJECT_QUERY, {
     variables: { id: projectId },
@@ -70,62 +71,69 @@ const ProjectTasksPage = () => {
     <>
       <Metadata title={projectName} description="Project tasks" />
 
-      <div className="tw-mb-4 tw-flex tw-items-center tw-justify-between tw-gap-2">
-        <div>
-          <h1 className="tw-text-xl tw-font-semibold tw-text-foreground">
-            {projectName}
-          </h1>
-          {projectData?.project?.description && (
-            <p className="tw-text-sm tw-text-muted-foreground">
-              {projectData.project.description}
-            </p>
-          )}
+      <section className="tw-flex tw-h-full tw-min-h-0 tw-flex-col tw-gap-4">
+        <div className="tw-flex tw-items-center tw-justify-between tw-gap-2">
+          <div>
+            <h1 className="tw-text-xl tw-font-semibold tw-text-foreground">
+              {projectName}
+            </h1>
+            {projectData?.project?.description && (
+              <p className="tw-text-sm tw-text-muted-foreground">
+                {projectData.project.description}
+              </p>
+            )}
+          </div>
+          <Button type="button" onClick={() => setTaskDialogOpen(true)}>
+            Add New Task
+          </Button>
         </div>
-        <Button type="button" onClick={() => setTaskDialogOpen(true)}>
-          Add New Task
-        </Button>
-      </div>
 
-      <div className="tw-space-y-4">
-        <TaskAnalyticsCell projectId={projectId} />
+        <div className="tw-flex tw-min-h-0 tw-flex-1 tw-flex-col tw-gap-6 tw-overflow-y-auto">
+          <TaskAnalyticsCell projectId={projectId} />
 
-        <TaskFilters
-          status={status}
-          priority={priority}
-          sortField={sortField}
-          sortDirection={sortDirection}
-          projectId={projectId}
-          onStatusChange={(value) => {
-            setStatus(value)
-            setPage(1)
-          }}
-          onPriorityChange={(value) => {
-            setPriority(value)
-            setPage(1)
-          }}
-          onSortFieldChange={(value) => {
-            setSortField(value)
-            setPage(1)
-          }}
-          onSortDirectionChange={(value) => {
-            setSortDirection(value)
-            setPage(1)
-          }}
-        />
+          <TaskFilters
+            status={status}
+            priority={priority}
+            sortField={sortField}
+            sortDirection={sortDirection}
+            projectId={projectId}
+            onStatusChange={(value) => {
+              setStatus(value)
+              setPage(1)
+            }}
+            onPriorityChange={(value) => {
+              setPriority(value)
+              setPage(1)
+            }}
+            onSortFieldChange={(value) => {
+              setSortField(value)
+              setPage(1)
+            }}
+            onSortDirectionChange={(value) => {
+              setSortDirection(value)
+              setPage(1)
+            }}
+          />
 
-        <TasksCell filter={filter} sort={sort} pagination={pagination} />
+          <TasksCell
+            filter={filter}
+            sort={sort}
+            pagination={pagination}
+            onTotalCountChange={setTotalCount}
+          />
 
-        <PaginationControls
-          page={page}
-          pageSize={pageSize}
-          totalCount={0}
-          onPageChange={setPage}
-          onPageSizeChange={(value) => {
-            setPageSize(value)
-            setPage(1)
-          }}
-        />
-      </div>
+          <PaginationControls
+            page={page}
+            pageSize={pageSize}
+            totalCount={totalCount}
+            onPageChange={setPage}
+            onPageSizeChange={(value) => {
+              setPageSize(value)
+              setPage(1)
+            }}
+          />
+        </div>
+      </section>
 
       <TaskFormDialog
         open={taskDialogOpen}

@@ -1,8 +1,26 @@
-import { useEffect, useMemo, useState } from 'react'
+import { type FormEvent, useEffect, useMemo, useState } from 'react'
 
 import { useMutation, useQuery } from '@redwoodjs/web'
 
 import { Button } from 'src/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from 'src/components/ui/dialog'
+import { Input } from 'src/components/ui/input'
+import { Label } from 'src/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from 'src/components/ui/select'
+import { Textarea } from 'src/components/ui/textarea'
 import type { BoardTask, TaskPriority, TaskStatus } from 'src/types/task.type'
 
 const PROJECTS_QUERY = gql`
@@ -122,7 +140,11 @@ export const TaskFormDialog = ({
     CREATE_TASK_MUTATION,
     {
       onError: (e) => setFormError(e.message),
-      refetchQueries: ['TasksCellQuery'],
+      refetchQueries: [
+        'TasksCellQuery',
+        'TaskAnalyticsCellQuery',
+        'HomePageWorkspaceQuery',
+      ],
     }
   )
 
@@ -130,7 +152,11 @@ export const TaskFormDialog = ({
     UPDATE_TASK_MUTATION,
     {
       onError: (e) => setFormError(e.message),
-      refetchQueries: ['TasksCellQuery'],
+      refetchQueries: [
+        'TasksCellQuery',
+        'TaskAnalyticsCellQuery',
+        'HomePageWorkspaceQuery',
+      ],
     }
   )
 
@@ -138,7 +164,7 @@ export const TaskFormDialog = ({
 
   const close = () => onOpenChange(false)
 
-  const onSubmit = async (e: React.FormEvent) => {
+  const onSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setFormError(null)
 
@@ -155,6 +181,11 @@ export const TaskFormDialog = ({
 
     if (!projectId) {
       setFormError('Please select a project.')
+      return
+    }
+
+    if (!dueDate) {
+      setFormError('Due date is required.')
       return
     }
 
@@ -201,185 +232,182 @@ export const TaskFormDialog = ({
     close()
   }
 
-  if (!open) return null
-
   return (
-    <div
-      className="tw-fixed tw-inset-0 tw-z-50 tw-flex tw-items-center tw-justify-center tw-bg-black/40 tw-p-4"
-      role="presentation"
-      onMouseDown={(e) => {
-        if (e.target === e.currentTarget) close()
-      }}
-    >
-      <div
-        className="tw-relative tw-w-full tw-max-w-lg"
-        role="dialog"
-        aria-modal="true"
-        aria-label={dialogTitle}
-      >
-        <div className="tw-w-full tw-max-w-lg tw-rounded-lg tw-border tw-border-border tw-bg-background tw-shadow-lg">
-          <div className="tw-flex tw-items-start tw-justify-between tw-gap-4 tw-border-b tw-border-border tw-px-5 tw-py-4">
-            <div>
-              <h2 className="tw-text-base tw-font-semibold tw-text-foreground">
-                {dialogTitle}
-              </h2>
-              <p className="tw-mt-1 tw-text-xs tw-text-muted-foreground">
-                {mode === 'edit'
-                  ? 'Update the details of this task.'
-                  : 'Fill in the details to create a new task.'}
-              </p>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="tw-p-0">
+        <div className="tw-border-b tw-border-border tw-px-5 tw-py-4">
+          <DialogHeader className="tw-space-y-1 tw-text-left">
+            <DialogTitle className="tw-text-base">{dialogTitle}</DialogTitle>
+            <DialogDescription className="tw-text-xs">
+              {mode === 'edit'
+                ? 'Update the details of this task.'
+                : 'Fill in the details to create a new task.'}
+            </DialogDescription>
+          </DialogHeader>
+        </div>
+
+        <form onSubmit={onSubmit} className="tw-space-y-4 tw-px-5 tw-py-4">
+          {projectsError && (
+            <div className="tw-rounded-md tw-bg-destructive/5 tw-px-3 tw-py-2 tw-text-xs tw-text-destructive">
+              Error loading projects: {projectsError.message}
             </div>
-            <Button type="button" variant="ghost" size="icon" onClick={close}>
-              ✕
-            </Button>
+          )}
+
+          {!projectsLoading && !hasProjects && (
+            <div className="tw-rounded-md tw-border tw-border-dashed tw-border-border tw-bg-muted/30 tw-px-3 tw-py-3 tw-text-sm tw-text-muted-foreground">
+              You don’t have any projects yet. Create a project first, then come
+              back to add tasks.
+            </div>
+          )}
+
+          {formError && (
+            <div className="tw-rounded-md tw-bg-destructive/5 tw-px-3 tw-py-2 tw-text-xs tw-text-destructive">
+              {formError}
+            </div>
+          )}
+
+          <div className="tw-grid tw-gap-3">
+            <div className="tw-grid tw-gap-1">
+              <Label
+                htmlFor="task-form-title"
+                className="tw-text-xs tw-font-medium"
+              >
+                Task Title
+              </Label>
+              <Input
+                id="task-form-title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="tw-h-9 tw-text-sm"
+                placeholder="e.g. Prepare sprint board"
+                disabled={saving}
+              />
+            </div>
+
+            <div className="tw-grid tw-gap-1">
+              <Label
+                htmlFor="task-form-description"
+                className="tw-text-xs tw-font-medium"
+              >
+                Description
+              </Label>
+              <Textarea
+                id="task-form-description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="tw-min-h-[90px] tw-text-sm"
+                placeholder="Optional details..."
+                disabled={saving}
+              />
+            </div>
+
+            <div className="tw-grid tw-grid-cols-1 tw-gap-3 md:tw-grid-cols-2">
+              <div className="tw-grid tw-gap-1">
+                <Label className="tw-text-xs tw-font-medium">Project</Label>
+                <Select
+                  value={projectId === '' ? undefined : String(projectId)}
+                  onValueChange={(value) =>
+                    setProjectId(value ? Number(value) : '')
+                  }
+                  disabled={saving || projectsLoading || !hasProjects}
+                >
+                  <SelectTrigger className="tw-h-9 tw-text-sm">
+                    <SelectValue
+                      placeholder={
+                        projectsLoading ? 'Loading…' : 'Select a project'
+                      }
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {projects.map((p) => (
+                      <SelectItem key={p.id} value={String(p.id)}>
+                        {p.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="tw-grid tw-gap-1">
+                <Label
+                  htmlFor="task-form-dueDate"
+                  className="tw-text-xs tw-font-medium"
+                >
+                  Due Date
+                </Label>
+                <Input
+                  id="task-form-dueDate"
+                  type="date"
+                  value={dueDate}
+                  onChange={(e) => setDueDate(e.target.value)}
+                  className="tw-h-9 tw-text-sm"
+                  disabled={saving}
+                />
+              </div>
+            </div>
+
+            <div className="tw-grid tw-grid-cols-1 tw-gap-3 md:tw-grid-cols-2">
+              <div className="tw-grid tw-gap-1">
+                <Label className="tw-text-xs tw-font-medium">Status</Label>
+                <Select
+                  value={status}
+                  onValueChange={(value) => setStatus(value as TaskStatus)}
+                  disabled={saving}
+                >
+                  <SelectTrigger className="tw-h-9 tw-text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="TODO">Todo</SelectItem>
+                    <SelectItem value="IN_PROGRESS">In Progress</SelectItem>
+                    <SelectItem value="COMPLETED">Completed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="tw-grid tw-gap-1">
+                <Label className="tw-text-xs tw-font-medium">Priority</Label>
+                <Select
+                  value={priority}
+                  onValueChange={(value) => setPriority(value as TaskPriority)}
+                  disabled={saving}
+                >
+                  <SelectTrigger className="tw-h-9 tw-text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="LOW">Low</SelectItem>
+                    <SelectItem value="MEDIUM">Medium</SelectItem>
+                    <SelectItem value="HIGH">High</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </div>
 
-          <form onSubmit={onSubmit} className="tw-space-y-4 tw-px-5 tw-py-4">
-            {projectsError && (
-              <div className="tw-rounded-md tw-bg-destructive/5 tw-px-3 tw-py-2 tw-text-xs tw-text-destructive">
-                Error loading projects: {projectsError.message}
-              </div>
-            )}
-
-            {!projectsLoading && !hasProjects && (
-              <div className="tw-rounded-md tw-border tw-border-dashed tw-border-border tw-bg-muted/30 tw-px-3 tw-py-3 tw-text-sm tw-text-muted-foreground">
-                You don’t have any projects yet. Create a project first, then
-                come back to add tasks.
-              </div>
-            )}
-
-            {formError && (
-              <div className="tw-rounded-md tw-bg-destructive/5 tw-px-3 tw-py-2 tw-text-xs tw-text-destructive">
-                {formError}
-              </div>
-            )}
-
-            <div className="tw-grid tw-gap-3">
-              <label className="tw-grid tw-gap-1">
-                <span className="tw-text-xs tw-font-medium tw-text-foreground">
-                  Task Title
-                </span>
-                <input
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="tw-h-9 tw-w-full tw-rounded-md tw-border tw-border-input tw-bg-background tw-px-3 tw-text-sm tw-text-foreground placeholder:tw-text-muted-foreground focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-ring focus-visible:tw-ring-offset-2 focus-visible:tw-ring-offset-background"
-                  placeholder="e.g. Prepare sprint board"
-                  disabled={saving}
-                />
-              </label>
-
-              <label className="tw-grid tw-gap-1">
-                <span className="tw-text-xs tw-font-medium tw-text-foreground">
-                  Description
-                </span>
-                <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="tw-min-h-[90px] tw-w-full tw-resize-y tw-rounded-md tw-border tw-border-input tw-bg-background tw-px-3 tw-py-2 tw-text-sm tw-text-foreground placeholder:tw-text-muted-foreground focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-ring focus-visible:tw-ring-offset-2 focus-visible:tw-ring-offset-background"
-                  placeholder="Optional details..."
-                  disabled={saving}
-                />
-              </label>
-
-              <div className="tw-grid tw-grid-cols-1 tw-gap-3 md:tw-grid-cols-2">
-                <label className="tw-grid tw-gap-1">
-                  <span className="tw-text-xs tw-font-medium tw-text-foreground">
-                    Project
-                  </span>
-                  <select
-                    value={projectId}
-                    onChange={(e) =>
-                      setProjectId(e.target.value ? Number(e.target.value) : '')
-                    }
-                    className="tw-h-9 tw-w-full tw-rounded-md tw-border tw-border-input tw-bg-background tw-px-3 tw-text-sm tw-text-foreground focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-ring focus-visible:tw-ring-offset-2 focus-visible:tw-ring-offset-background"
-                    disabled={saving || projectsLoading || !hasProjects}
-                  >
-                    <option value="">
-                      {projectsLoading ? 'Loading…' : 'Select a project'}
-                    </option>
-                    {projects.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-
-                <label className="tw-grid tw-gap-1">
-                  <span className="tw-text-xs tw-font-medium tw-text-foreground">
-                    Due Date
-                  </span>
-                  <input
-                    type="date"
-                    value={dueDate}
-                    onChange={(e) => setDueDate(e.target.value)}
-                    className="tw-h-9 tw-w-full tw-rounded-md tw-border tw-border-input tw-bg-background tw-px-3 tw-text-sm tw-text-foreground focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-ring focus-visible:tw-ring-offset-2 focus-visible:tw-ring-offset-background"
-                    disabled={saving}
-                  />
-                </label>
-              </div>
-
-              <div className="tw-grid tw-grid-cols-1 tw-gap-3 md:tw-grid-cols-2">
-                <label className="tw-grid tw-gap-1">
-                  <span className="tw-text-xs tw-font-medium tw-text-foreground">
-                    Status
-                  </span>
-                  <select
-                    value={status}
-                    onChange={(e) => setStatus(e.target.value as TaskStatus)}
-                    className="tw-h-9 tw-w-full tw-rounded-md tw-border tw-border-input tw-bg-background tw-px-3 tw-text-sm tw-text-foreground focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-ring focus-visible:tw-ring-offset-2 focus-visible:tw-ring-offset-background"
-                    disabled={saving}
-                  >
-                    <option value="TODO">Todo</option>
-                    <option value="IN_PROGRESS">In Progress</option>
-                    <option value="COMPLETED">Completed</option>
-                  </select>
-                </label>
-
-                <label className="tw-grid tw-gap-1">
-                  <span className="tw-text-xs tw-font-medium tw-text-foreground">
-                    Priority
-                  </span>
-                  <select
-                    value={priority}
-                    onChange={(e) =>
-                      setPriority(e.target.value as TaskPriority)
-                    }
-                    className="tw-h-9 tw-w-full tw-rounded-md tw-border tw-border-input tw-bg-background tw-px-3 tw-text-sm tw-text-foreground focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-ring focus-visible:tw-ring-offset-2 focus-visible:tw-ring-offset-background"
-                    disabled={saving}
-                  >
-                    <option value="LOW">Low</option>
-                    <option value="MEDIUM">Medium</option>
-                    <option value="HIGH">High</option>
-                  </select>
-                </label>
-              </div>
-            </div>
-
-            <div className="tw-flex tw-items-center tw-justify-end tw-gap-2 tw-border-t tw-border-border tw-pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={close}
-                disabled={saving}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={saving || projectsLoading || !hasProjects}
-              >
-                {saving
-                  ? 'Saving…'
-                  : mode === 'edit'
-                    ? 'Save Changes'
-                    : 'Create Task'}
-              </Button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
+          <DialogFooter className="tw-border-t tw-border-border tw-pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={close}
+              disabled={saving}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              disabled={saving || projectsLoading || !hasProjects}
+            >
+              {saving
+                ? 'Saving…'
+                : mode === 'edit'
+                  ? 'Save Changes'
+                  : 'Create Task'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   )
 }
 
