@@ -1,10 +1,11 @@
 import { useState } from 'react'
 
-import { LogOut } from 'lucide-react'
+import { LayoutDashboard, LogOut, Settings } from 'lucide-react'
 
-import { Link, routes } from '@redwoodjs/router'
+import { Link, routes, useMatch } from '@redwoodjs/router'
 import { useMutation } from '@redwoodjs/web'
 
+import avt from 'src/assets/avt.jpg'
 import logo from 'src/assets/logo.png'
 import { useAuth } from 'src/auth'
 import ProjectsCell from 'src/cells/ProjectsCell'
@@ -45,6 +46,7 @@ const CREATE_PROJECT_MUTATION = gql`
 
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const { currentUser, logOut } = useAuth()
+  const matchHome = useMatch(routes.home())
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
   const [taskDialogOpen, setTaskDialogOpen] = useState(false)
 
@@ -141,9 +143,11 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               </div>
               <Link
                 to={routes.home()}
-                className="tw-flex tw-w-full tw-items-center tw-justify-between tw-rounded-md tw-bg-background tw-px-3 tw-py-2 tw-text-sm tw-font-medium tw-text-foreground tw-shadow-sm hover:tw-bg-muted/80"
+                className={`tw-flex tw-w-full tw-items-center tw-justify-between tw-rounded-md tw-px-3 tw-py-2 tw-text-sm hover:tw-bg-background hover:tw-text-foreground ${matchHome.match ? 'tw-bg-background tw-font-medium tw-text-foreground' : 'tw-text-muted-foreground'}`}
               >
-                <span>My Tasks</span>
+                <span className="tw-flex tw-items-center tw-gap-2">
+                  <LayoutDashboard size={16} /> My Tasks
+                </span>
               </Link>
             </nav>
 
@@ -171,13 +175,21 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 System
               </div>
               <button className="tw-flex tw-w-full tw-items-center tw-justify-between tw-rounded-md tw-px-3 tw-py-2 tw-text-sm tw-text-muted-foreground hover:tw-bg-background hover:tw-text-foreground">
-                <span>Settings</span>
+                <span className="tw-flex tw-items-center tw-gap-2">
+                  <Settings size={16} />
+                  Settings
+                </span>
               </button>
             </div>
           </div>
 
           <div className="tw-border-t tw-border-border tw-px-4 tw-py-4">
             <div className="tw-flex tw-items-center tw-justify-between tw-gap-3">
+              <img
+                src={avt}
+                alt="User Avatar"
+                className="tw-h-10 tw-w-10 tw-rounded-full"
+              />
               <div className="tw-flex tw-flex-col tw-overflow-hidden">
                 <span className="tw-truncate tw-text-sm tw-font-medium tw-text-foreground">
                   {(currentUser?.username as string) ?? 'User'}

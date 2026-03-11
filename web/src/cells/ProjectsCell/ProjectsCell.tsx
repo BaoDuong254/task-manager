@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { Delete } from 'lucide-react'
+import { CircleSmall, Delete } from 'lucide-react'
 import type {
   ProjectsCellQuery,
   ProjectsCellQueryVariables,
@@ -109,14 +109,12 @@ export const Success = ({
             <div className="tw-flex tw-items-center tw-gap-1">
               <Link
                 to={routes.projectTasks({ id: project.id })}
-                className={`tw-flex-1 tw-rounded-md tw-px-3 tw-py-2 tw-transition-colors ${
-                  activeProjectId === project.id
-                    ? 'tw-bg-primary/10 tw-text-foreground'
-                    : 'tw-bg-background tw-text-muted-foreground hover:tw-bg-muted/80 hover:tw-text-foreground'
-                }`}
+                className={`tw-flex tw-w-full tw-items-center tw-justify-between tw-rounded-md tw-px-3 tw-py-2 tw-text-sm hover:tw-bg-background hover:tw-text-foreground ${activeProjectId === project.id ? 'tw-bg-background tw-font-medium tw-text-foreground' : 'tw-text-muted-foreground'}`}
               >
                 <div className="tw-flex tw-items-center tw-justify-between tw-gap-2">
-                  <span className="tw-truncate">{project.name}</span>
+                  <span className="tw-flex tw-items-center tw-gap-1 tw-truncate">
+                    <CircleSmall size={16} /> {project.name}
+                  </span>
                 </div>
               </Link>
               <Button
