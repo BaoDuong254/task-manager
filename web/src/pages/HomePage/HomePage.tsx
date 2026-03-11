@@ -9,6 +9,7 @@ import { PaginationControls } from 'src/components/PaginationControls'
 import { TaskFilters } from 'src/components/TaskFilters'
 import { Button } from 'src/components/ui/button'
 import { useProjectDialog } from 'src/contexts/ProjectDialogContext'
+import { useSearch } from 'src/contexts/SearchContext'
 import type {
   SortDirection,
   TaskFilterPriority,
@@ -29,6 +30,7 @@ const WORKSPACE_QUERY = gql`
 
 const HomePage = () => {
   const { openProjectDialog } = useProjectDialog()
+  const { debouncedSearch } = useSearch()
   const [status, setStatus] = useState<TaskFilterStatus>('ALL')
   const [priority, setPriority] = useState<TaskFilterPriority>('ALL')
   const [sortField, setSortField] = useState<TaskSortField>('DEADLINE')
@@ -52,6 +54,7 @@ const HomePage = () => {
         : priority === 'HIGH_PRIORITY'
           ? 'HIGH'
           : priority,
+    search: debouncedSearch || null,
   }
 
   const sort: Record<string, unknown> = {

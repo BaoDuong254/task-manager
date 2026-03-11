@@ -51,6 +51,13 @@ const buildTaskWhere = ({
     where.projectId = filter.projectId
   }
 
+  if (filter?.search) {
+    where.OR = [
+      { title: { contains: filter.search, mode: 'insensitive' } },
+      { description: { contains: filter.search, mode: 'insensitive' } },
+    ]
+  }
+
   return where
 }
 

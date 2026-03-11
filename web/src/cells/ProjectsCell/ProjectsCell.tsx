@@ -45,6 +45,12 @@ const DELETE_PROJECT_MUTATION = gql`
   }
 `
 
+export const beforeQuery = () => {
+  return {
+    fetchPolicy: 'cache-and-network' as const,
+  }
+}
+
 export const Loading = () => (
   <div className="tw-space-y-1">
     {Array.from({ length: 3 }).map((_, index) => (

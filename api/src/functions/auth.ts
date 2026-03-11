@@ -211,11 +211,13 @@ export const handler = async (
       expires: 60 * 60 * 24 * 365 * 10,
       name: 'Redwood Application',
       domain:
-        process.env.NODE_ENV === 'development' ? 'localhost' : 'server.com',
+        process.env.NODE_ENV === 'development'
+          ? 'localhost'
+          : process.env.WEBAUTHN_DOMAIN || 'your-app.netlify.app',
       origin:
         process.env.NODE_ENV === 'development'
           ? 'http://localhost:8910'
-          : 'https://server.com',
+          : process.env.WEB_URL || 'https://your-app.netlify.app',
       type: 'platform',
       timeout: 60000,
       credentialFields: {

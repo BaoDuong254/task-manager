@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { LayoutDashboard, LogOut, Settings } from 'lucide-react'
 
@@ -31,6 +31,7 @@ import {
   DialogTitle,
 } from 'src/components/ui/dialog'
 import { ProjectDialogContext } from 'src/contexts/ProjectDialogContext'
+import { SearchContext } from 'src/contexts/SearchContext'
 
 type DashboardLayoutProps = {
   children?: React.ReactNode
@@ -51,6 +52,14 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const matchSettings = useMatch(routes.settings())
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
   const [taskDialogOpen, setTaskDialogOpen] = useState(false)
+
+  const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 300)
+    return () => clearTimeout(timer)
+  }, [search])
 
   const [projectDialogOpen, setProjectDialogOpen] = useState(false)
   const [projectName, setProjectName] = useState('')
@@ -119,6 +128,8 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             <input
               type="search"
               placeholder="Search tasks, projects..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
               className="tw-h-9 tw-w-full tw-rounded-md tw-border tw-border-input tw-bg-background tw-px-3 tw-text-sm tw-text-foreground placeholder:tw-text-muted-foreground focus-visible:tw-outline-none focus-visible:tw-ring-2 focus-visible:tw-ring-ring focus-visible:tw-ring-offset-2 focus-visible:tw-ring-offset-background"
             />
           </div>
@@ -210,11 +221,15 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         </aside>
 
         <main className="tw-flex-1 tw-overflow-hidden tw-bg-muted/10 tw-px-4 tw-py-4 md:tw-px-8 md:tw-py-6">
-          <ProjectDialogContext.Provider
-            value={{ openProjectDialog: handleOpenProjectDialog }}
+          <SearchContext.Provider
+            value={{ search, setSearch, debouncedSearch }}
           >
-            {children}
-          </ProjectDialogContext.Provider>
+            <ProjectDialogContext.Provider
+              value={{ openProjectDialog: handleOpenProjectDialog }}
+            >
+              {children}
+            </ProjectDialogContext.Provider>
+          </SearchContext.Provider>
         </main>
       </div>
 

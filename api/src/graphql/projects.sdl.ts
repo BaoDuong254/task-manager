@@ -12,7 +12,7 @@ export const schema = gql`
   }
 
   type Query {
-    projects: [Project!]! @requireAuth
+    projects(search: String): [Project!]! @requireAuth
     project(id: Int!): Project @requireAuth
   }
 

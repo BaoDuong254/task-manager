@@ -1,3 +1,4 @@
+import type { Prisma } from '@prisma/client'
 import type {
   QueryResolvers,
   MutationResolvers,
@@ -22,14 +23,20 @@ const getCurrentUserId = () => {
   return userId
 }
 
-export const projects: QueryResolvers['projects'] = () => {
+export const projects: QueryResolvers['projects'] = ({ search }) => {
   const userId = getCurrentUserId()
 
+  const where: Prisma.ProjectWhereInput = {
+    deletedAt: null,
+    userId,
+  }
+
+  if (search) {
+    where.name = { contains: search, mode: 'insensitive' }
+  }
+
   return db.project.findMany({
-    where: {
-      deletedAt: null,
-      userId,
-    },
+    where,
     orderBy: {
       createdAt: 'desc',
     },
