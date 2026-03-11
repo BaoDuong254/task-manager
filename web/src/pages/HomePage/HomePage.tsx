@@ -42,9 +42,11 @@ const HomePage = () => {
   const { data: workspaceData, loading: workspaceLoading } =
     useQuery(WORKSPACE_QUERY)
 
+  const isInitialLoading = workspaceLoading && !workspaceData
+
   const projectCount = workspaceData?.projects.length ?? 0
   const taskCount = workspaceData?.tasks.totalCount ?? 0
-  const showWelcome = !workspaceLoading && projectCount === 0 && taskCount === 0
+  const showWelcome = !isInitialLoading && projectCount === 0 && taskCount === 0
 
   const filter: Record<string, unknown> = {
     status: status === 'ALL' ? null : status,
@@ -71,7 +73,7 @@ const HomePage = () => {
     <>
       <Metadata title="My Tasks" description="Personal task board" />
 
-      {workspaceLoading ? (
+      {isInitialLoading ? (
         <div className="tw-h-40 tw-animate-pulse tw-rounded-lg tw-border tw-border-border tw-bg-muted/60" />
       ) : showWelcome ? (
         <section className="tw-flex tw-h-full tw-min-h-[60vh] tw-flex-col tw-items-center tw-justify-center tw-rounded-lg tw-border tw-border-dashed tw-border-border tw-bg-muted/40 tw-p-8 tw-text-center">
