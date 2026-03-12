@@ -89,7 +89,6 @@ type SuccessProps = CellSuccessProps<TasksCellQuery, TasksCellQueryVariables> &
 
 export const Success = ({
   tasks,
-  queryResult,
   filter,
   onTotalCountChange,
 }: SuccessProps) => {
@@ -143,7 +142,8 @@ export const Success = ({
     setTaskToDelete(task)
   }
 
-  const handleConfirmDelete = async () => {
+  const handleConfirmDelete = async (e: React.MouseEvent) => {
+    e.preventDefault()
     if (!taskToDelete?.id || deleting) {
       return
     }
@@ -157,14 +157,10 @@ export const Success = ({
         'TaskAnalyticsCellQuery',
         'HomePageWorkspaceQuery',
       ],
+      awaitRefetchQueries: true,
     })
 
     setTaskToDelete(null)
-    await refetchBoard()
-  }
-
-  const refetchBoard = async () => {
-    await queryResult?.refetch?.()
   }
 
   return (
@@ -190,13 +186,12 @@ export const Success = ({
         initialTask={editingTask}
         defaultStatus={defaultStatus}
         defaultProjectId={filter?.projectId ?? undefined}
-        onSaved={refetchBoard}
       />
 
       <AlertDialog
         open={!!taskToDelete}
         onOpenChange={(open) => {
-          if (!open) {
+          if (!open && !deleting) {
             setTaskToDelete(null)
           }
         }}
@@ -211,7 +206,12 @@ export const Success = ({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel asChild>
-              <Button type="button" variant="outline" size="sm">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={deleting}
+              >
                 Cancel
               </Button>
             </AlertDialogCancel>
@@ -223,7 +223,7 @@ export const Success = ({
                 onClick={handleConfirmDelete}
                 disabled={deleting}
               >
-                Delete
+                {deleting ? 'Deleting…' : 'Delete'}
               </Button>
             </AlertDialogAction>
           </AlertDialogFooter>

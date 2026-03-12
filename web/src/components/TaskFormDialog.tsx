@@ -160,12 +160,15 @@ export const TaskFormDialog = ({
     }
   )
 
-  const saving = createLoading || updateLoading
+  const [submitting, setSubmitting] = useState(false)
+
+  const saving = createLoading || updateLoading || submitting
 
   const close = () => onOpenChange(false)
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault()
+    if (submitting) return
     setFormError(null)
 
     const trimmedTitle = title.trim()
@@ -190,46 +193,54 @@ export const TaskFormDialog = ({
     }
 
     const dueDateValue = toDateTimeOrNull(dueDate)
+    setSubmitting(true)
 
-    if (mode === 'create') {
-      await createTask({
-        variables: {
-          input: {
-            title: trimmedTitle,
-            description: description.trim() || null,
-            status,
-            priority,
-            projectId: Number(projectId),
-            dueDate: dueDateValue,
+    try {
+      if (mode === 'create') {
+        await createTask({
+          variables: {
+            input: {
+              title: trimmedTitle,
+              description: description.trim() || null,
+              status,
+              priority,
+              projectId: Number(projectId),
+              dueDate: dueDateValue,
+            },
           },
-        },
-      })
-    } else {
-      if (!initialTask?.id) {
-        setFormError('Missing task id.')
-        return
+        })
+      } else {
+        if (!initialTask?.id) {
+          setFormError('Missing task id.')
+          setSubmitting(false)
+          return
+        }
+
+        await updateTask({
+          variables: {
+            id: initialTask.id,
+            input: {
+              title: trimmedTitle,
+              description: description.trim() || null,
+              status,
+              priority,
+              projectId: Number(projectId),
+              dueDate: dueDateValue,
+            },
+          },
+        })
       }
 
-      await updateTask({
-        variables: {
-          id: initialTask.id,
-          input: {
-            title: trimmedTitle,
-            description: description.trim() || null,
-            status,
-            priority,
-            projectId: Number(projectId),
-            dueDate: dueDateValue,
-          },
-        },
-      })
-    }
+      close()
 
-    if (onSaved) {
-      await onSaved()
+      if (onSaved) {
+        onSaved()
+      }
+    } catch {
+      // onError callback handles displaying the error
+    } finally {
+      setSubmitting(false)
     }
-
-    close()
   }
 
   return (
