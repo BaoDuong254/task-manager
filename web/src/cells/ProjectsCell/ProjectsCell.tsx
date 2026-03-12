@@ -90,11 +90,13 @@ export const Success = ({
     }
   )
 
-  const handleConfirmDelete = async () => {
+  const handleConfirmDelete = async (e: React.MouseEvent) => {
+    e.preventDefault()
     if (!projectToDelete?.id || deleting) return
 
     await deleteProject({
       variables: { id: projectToDelete.id },
+      awaitRefetchQueries: true,
     })
 
     const remaining = projects.filter((p) => p.id !== projectToDelete.id)
@@ -145,7 +147,7 @@ export const Success = ({
       <AlertDialog
         open={!!projectToDelete}
         onOpenChange={(open) => {
-          if (!open) {
+          if (!open && !deleting) {
             setProjectToDelete(null)
           }
         }}
@@ -161,7 +163,12 @@ export const Success = ({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel asChild>
-              <Button type="button" variant="outline" size="sm">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={deleting}
+              >
                 Cancel
               </Button>
             </AlertDialogCancel>
@@ -173,7 +180,7 @@ export const Success = ({
                 onClick={handleConfirmDelete}
                 disabled={deleting}
               >
-                Delete project
+                {deleting ? 'Deleting…' : 'Delete project'}
               </Button>
             </AlertDialogAction>
           </AlertDialogFooter>
