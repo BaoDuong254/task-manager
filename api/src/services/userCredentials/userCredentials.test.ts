@@ -1,4 +1,4 @@
-import type { UserCredential } from '@prisma/client'
+import { db } from 'src/lib/db'
 
 import {
   userCredentials,
@@ -7,69 +7,118 @@ import {
   updateUserCredential,
   deleteUserCredential,
 } from './userCredentials'
-import type { StandardScenario } from './userCredentials.scenarios'
-
-// Generated boilerplate tests do not account for all circumstances
-// and can fail without adjustments, e.g. Float.
-//           Please refer to the RedwoodJS Testing Docs:
-//       https://redwoodjs.com/docs/testing#testing-services
-// https://redwoodjs.com/docs/testing#jest-expect-type-considerations
 
 describe('userCredentials', () => {
-  scenario(
-    'returns all userCredentials',
-    async (scenario: StandardScenario) => {
-      const result = await userCredentials()
+  const createUser = async (suffix: string) => {
+    return db.user.create({
+      data: {
+        email: `${suffix}@example.com`,
+        username: `${suffix}-user`,
+        hashedPassword: 'hashed',
+        salt: 'salt',
+      },
+    })
+  }
 
-      expect(result.length).toEqual(Object.keys(scenario.userCredential).length)
-    }
-  )
+  const createCredential = async (userId: number, id: string) => {
+    return db.userCredential.create({
+      data: {
+        id,
+        userId,
+        publicKey: Buffer.from([1, 2, 3]),
+        counter: BigInt(5),
+      },
+    })
+  }
 
-  scenario(
-    'returns a single userCredential',
-    async (scenario: StandardScenario) => {
-      const result = await userCredential({
-        id: scenario.userCredential.one.id,
-      })
+  beforeEach(async () => {
+    await db.userCredential.deleteMany()
+    await db.task.deleteMany()
+    await db.project.deleteMany()
+    await db.user.deleteMany()
+  })
 
-      expect(result).toEqual(scenario.userCredential.one)
-    }
-  )
+  afterEach(async () => {
+    await db.userCredential.deleteMany()
+    await db.task.deleteMany()
+    await db.project.deleteMany()
+    await db.user.deleteMany()
+  })
 
-  scenario('creates a userCredential', async (scenario: StandardScenario) => {
+  it('returns all userCredentials', async () => {
+    const userOne = await createUser('credential-list-one')
+    const userTwo = await createUser('credential-list-two')
+    await createCredential(userOne.id, 'cred-one')
+    await createCredential(userTwo.id, 'cred-two')
+
+    const result = await userCredentials()
+
+    expect(result).toHaveLength(2)
+  })
+
+  it('returns a single userCredential', async () => {
+    const user = await createUser('credential-single')
+    const credential = await createCredential(user.id, 'cred-single')
+
+    const result = await userCredential({ id: credential.id })
+
+    expect(result?.id).toEqual('cred-single')
+    expect(result?.userId).toEqual(user.id)
+  })
+
+  it('creates a userCredential', async () => {
+    const user = await createUser('credential-create')
+
     const result = await createUserCredential({
       input: {
-        id: 'String',
-        userId: scenario.userCredential.two.userId,
+        id: 'credential-new',
+        userId: user.id,
         publicKey: Buffer.from([143, 246, 160]),
         counter: 2120934,
       },
     })
 
-    expect(result.id).toEqual('String')
-    expect(result.userId).toEqual(scenario.userCredential.two.userId)
+    expect(result.id).toEqual('credential-new')
+    expect(result.userId).toEqual(user.id)
     expect(result.publicKey).toEqual(Buffer.from([143, 246, 160]))
-    expect(result.counter).toEqual(2120934)
+    expect(result.counter).toEqual(BigInt(2120934))
   })
 
-  scenario('updates a userCredential', async (scenario: StandardScenario) => {
-    const original = (await userCredential({
-      id: scenario.userCredential.one.id,
-    })) as UserCredential
+  it('updates a userCredential counter', async () => {
+    const user = await createUser('credential-update')
+    const original = await createCredential(user.id, 'cred-update')
+
     const result = await updateUserCredential({
       id: original.id,
-      input: { id: 'String2' },
+      input: { id: original.id, counter: 99 },
     })
 
-    expect(result.id).toEqual('String2')
+    expect(result.id).toEqual('cred-update')
+    expect(result.counter).toEqual(BigInt(99))
   })
 
-  scenario('deletes a userCredential', async (scenario: StandardScenario) => {
-    const original = (await deleteUserCredential({
-      id: scenario.userCredential.one.id,
-    })) as UserCredential
+  it('deletes a userCredential', async () => {
+    const user = await createUser('credential-delete')
+    const credential = await createCredential(user.id, 'cred-delete')
+
+    const original = await deleteUserCredential({
+      id: credential.id,
+    })
     const result = await userCredential({ id: original.id })
 
     expect(result).toEqual(null)
+  })
+
+  it('stores credentials under the related user', async () => {
+    const user = await createUser('credential-relation')
+    const credential = await createCredential(user.id, 'cred-relation')
+
+    const result = await db.user.findUnique({
+      where: { id: user.id },
+      include: { credentials: true },
+    })
+
+    expect(result?.credentials).toHaveLength(1)
+    expect(result?.credentials[0].id).toEqual(credential.id)
   })
 })
