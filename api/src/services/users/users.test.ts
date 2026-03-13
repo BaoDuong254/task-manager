@@ -1,6 +1,9 @@
 import type { User } from '@prisma/client'
 
+import { context } from '@redwoodjs/graphql-server'
+
 import { users, user, createUser, updateUser, deleteUser } from './users'
+import { updateMyUsername } from './users'
 import type { StandardScenario } from './users.scenarios'
 
 // Generated boilerplate tests do not account for all circumstances
@@ -10,6 +13,18 @@ import type { StandardScenario } from './users.scenarios'
 // https://redwoodjs.com/docs/testing#jest-expect-type-considerations
 
 describe('users', () => {
+  afterEach(() => {
+    context.currentUser = undefined
+  })
+
+  const setCurrentUserFromScenario = (scenario: StandardScenario) => {
+    context.currentUser = {
+      id: scenario.user.one.id,
+      email: scenario.user.one.email,
+      username: scenario.user.one.username,
+    }
+  }
+
   scenario('returns all users', async (scenario: StandardScenario) => {
     const result = await users()
 
@@ -47,6 +62,40 @@ describe('users', () => {
 
     expect(result.email).toEqual('String50077922')
   })
+
+  scenario(
+    'updates the current user username after trimming input',
+    async (scenario: StandardScenario) => {
+      setCurrentUserFromScenario(scenario)
+
+      const result = await updateMyUsername({ username: '  renamed-user  ' })
+
+      expect(result.id).toEqual(scenario.user.one.id)
+      expect(result.username).toEqual('renamed-user')
+    }
+  )
+
+  scenario(
+    'rejects an empty username for the current user',
+    async (scenario: StandardScenario) => {
+      setCurrentUserFromScenario(scenario)
+
+      await expect(updateMyUsername({ username: '   ' })).rejects.toThrow(
+        'Username is required'
+      )
+    }
+  )
+
+  scenario(
+    'rejects a username that is too short',
+    async (scenario: StandardScenario) => {
+      setCurrentUserFromScenario(scenario)
+
+      await expect(updateMyUsername({ username: 'a' })).rejects.toThrow(
+        'Username must be 2–50 characters'
+      )
+    }
+  )
 
   scenario('deletes a user', async (scenario: StandardScenario) => {
     const original = (await deleteUser({ id: scenario.user.one.id })) as User
